@@ -54,7 +54,7 @@ function exits. The script makes a call to initializing the object and calling
 run() once.
 
 ### Demonstration:
-
+![](https://github.com/rdbabiera/warmup_project/blob/main/gifs/drive-square.gif)
 
 ## person_follower
 ### Description:
