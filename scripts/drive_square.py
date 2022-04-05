@@ -38,14 +38,14 @@ class DriveSquare(object):
 
     # run() - drives turtlebot in a square
     def run(self):
-        r = rospy.Rate(5)
+        r = rospy.Rate(10)
         for i in range(0, 4):
             # Forward - 6 seconds
-            for j in range(0, 30):
+            for j in range(0, 60):
                 self.forward()
                 r.sleep()
             # Turning - 1 second
-            for j in range(0, self.turn_duration * 5):
+            for j in range(0, self.turn_duration * 10):
                 self.turn()
                 r.sleep()
         self.stop()

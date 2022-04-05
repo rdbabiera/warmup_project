@@ -34,15 +34,15 @@ turn publishes a Twist() object with no linear velocity but an angular-z velocit
 of $\frac{\pi}{2}$ / duration.
 
 Lastly, run combines these helper functions to drive turtlebot in a square. 
-Messages are sent at a rate of 5Hz using rospy.Rate(5). In a for-loop that 
+Messages are sent at a rate of 10Hz using rospy.Rate(10). In a for-loop that 
 runs four times, TurtleBot moves forward for 6 seconds, and then turns for the 
 turn duration. These timings are done using inner for-loops that send commands 
-over some x amount of times, such that the code runs for $\frac{x}{5}$ seconds. 
+over some x amount of times, such that the code runs for $\frac{x}{10}$ seconds. 
 An bare-bones example of moving fowards is given below:
 
 ```python
 def run(self):
-    r = rospy.Rate(5)
+    r = rospy.Rate(10)
     for i in range(0, 4):
         for j in range(0, x):
             self.forward()
@@ -57,10 +57,18 @@ run() once.
 
 
 ## person_follower
+### Description:
 
+### Code Overview:
+
+### Demonstration:
 
 ## wall_follower
+### Description:
 
+### Code Overview:
+
+### Demonstration:
 
 ## Challenges
 
