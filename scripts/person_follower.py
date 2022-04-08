@@ -13,14 +13,13 @@ class PersonFollower(object):
         self.pub_move = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
         #--- Initialize State Variables, Saved Variables from Scanner
-        self.closest_index = None
-        self.closest_range = None
+        self.closest_index = 0
+        self.closest_range = 0
+        self.range_max = 3.5
 
-        # Static Values
-        self.range_max = 4
-        self.increment = None
-        self.angle_min = None
-        self.angle_max = None
+        # Declared Values
+        self.stop_distance = 0.4
+        self.linear_vel = 0.15
 
         #--- Spinup Time
         rospy.sleep(2)
@@ -28,47 +27,48 @@ class PersonFollower(object):
     # Change State Variables
     def process_scan(self, data):
         ranges = data.ranges
-        if self.closest_index == None:
-            self.increment = data.angle_increment
-            self.angle_min = data.angle_min
-            self.angle_max = data.angle_max
-            self.range_max = min(self.range_max, data.range_max)
 
-            self.closest_index = 0
-            self.closest_range = 10
-
-        self.closest_range = 4
+        closest_range = 4
+        closest_index = 0
         for i, r in enumerate(ranges):
-            if r < self.closest_range and r > 0:
-                self.closest_range = r
-                self.closest_index = i
-        # print(f"Closest Angle: {self.closest_index}, Closest Range: {self.closest_range}")
+            if r < closest_range and r > 0:
+                closest_range = r
+                closest_index = i
+        
+        self.closest_range = closest_range
+        self.closest_index = closest_index
 
     def get_directions(self):
         command = Twist()
-        if self.closest_range > 0.60 and self.closest_range < 10:
-            command.linear.x = 0.15
+        # Do Nothing
+        if self.closest_range == 4:
+            return command
+
+        # Stopping Range
+        if self.closest_range >= 0.025 and self.closest_range <= self.stop_distance:
+            if self.closest_index >= 180 and self.closest_index < 360:
+                command.angular.z = -0.785
+            elif self.closest_index >= 44 and self.closest_index < 180:
+                command.angular.z = 0.785
+        # Moving Range
+        elif self.closest_range > self.stop_distance and self.closest_range < 4:
+            command.linear.x = self.linear_vel
             # Handle View
-            if (self.closest_index <= 360 and self.closest_index > 345) or \
-               (self.closest_index < 15 and self.closest_index >= 0):
-                command.angular.z = 0
-            elif (self.closest_index >= 180):
+            if self.closest_index >= 180 and self.closest_index < 345:
                 command.angular.z = -(self.closest_index - 180) / 180
-            else:
+            elif self.closest_index >= 14 and self.closest_index < 180:
                 command.angular.z = self.closest_index / 180
-                #command.angular.z = min((self.closest_index / 360) * 6.28, 0.20)
+            command.angular.z *= 1.5
+
         return command
 
     # Run in Loop until Exit
     def run(self):
         r = rospy.Rate(10)
         while not rospy.is_shutdown():
-            # Do Nothing while no Data is Provided
-            if not self.closest_index and not self.closest_range:
-                continue
             # Get Next Direction, Transmit for a short period
             command = self.get_directions()
-            for i in range(0, 3):
+            for i in range(0, 2):
                 self.pub_move.publish(command)
                 r.sleep()
 
