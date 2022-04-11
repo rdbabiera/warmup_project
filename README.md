@@ -72,9 +72,13 @@ moving straight. This can be generalized as:
 angular velocity = (state - error) * c = (angle - straight) * constant.
 
 In my code, I normalized the error on a scale from one to zero before multiplying 
-by a constant. Although proportional control can also be used on the linear 
-velocity depending on the distance to the person, the stopping distance is 
-large enough such that TurtleBot never collides with the target.
+by a constant.Proportional control is also used on the linear 
+velocity depending on the angle error to zero, as a high angular and linear 
+velocity causes TurtleBot to move backwards when right behind the person. Thus, 
+linear velocity is minimized when TurtleBot needs to make sharper turns, and this 
+is generalized below:
+
+linear velocity = (state - error) * c = (-angle + backwards) * constant
 
 ### Code Overview:
 ```python
@@ -110,13 +114,16 @@ robot will do nothing. Otherwise, there are two separate conditionals to be
 taken care of. In the first, if the robot is within the stopping distance, it 
 spins clockwise or counterclockwise with angular magnitude 0.785 rad/s towards 
 the closest object. If the closest object is further than the stopping distance, 
-the robot moves at a constant linear velocity set in init(). If the closest 
-object is in a 30-degree cone, the robot will move straight. Otherwise, if the 
-person is on the left side [14, 180), the robot gets angular velocity 
-(closest index / 180) * 1.5, meaning that angular velocity is fastest behind 
-the robot. On the right side [180, 345), the angular velocity is 
-(closest index - 360 / 180) * 1.5. This performs the same functionality, as all 
-angles within the range will become negative, and having greatest magnitude at 180.
+and TurtleBot sees the closest object within a 30 degree cone, it will move 
+straight with velocity self.linear_vel. Otherwise, on the left side of the person 
+[14, 180), TurtleBot has angular velocity (closest index / 180) * 1.5 and linear velocity 
+((-self.closest_index + 179) / 180) * self.linear_vel. This makes TurtleBot turn 
+faster towards the target when directly behind, and the linear velocity is set 
+such that this turn is done properly. When facing the target, linear velocity 
+is higher. On the right side [180, 345), angular velocity is (self.closest_index - 360) / 180 
+and linear velocity is ((self.closest_index - 180) / 180) * self.linear_vel. This 
+performs the same functionality, as all angles within the range will become negative, 
+and having greatest magnitude at 180.
 
 Lastly, run() sets a rate of 10Hz, and constantly spins to grab directions using 
 get_directions(). Each command is then run twice at the set rate.
@@ -196,7 +203,8 @@ This command is then published once.
 ![](https://github.com/rdbabiera/warmup_project/blob/main/gifs/wall_follower_2.gif)
 
 ## Challenges
-Some of the challenges faced in the project can be divided into timing and proportional control. For drive_square, the most important aspect of the task was to have constant 
+Some of the challenges faced in the project can be divided into timing and proportional control. 
+For drive_square, the most important aspect of the task was to have constant 
 timing on all turns and movements. However, my first attempts consisted of sending 
 commands once and sleeping for a set amount of time, which caused many inconsistencies 
 in when commands would run and for how long. I then learned that commands can be 

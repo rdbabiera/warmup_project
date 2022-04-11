@@ -56,10 +56,10 @@ class PersonFollower(object):
             # Handle View
             if self.closest_index >= 180 and self.closest_index < 345:
                 command.angular.z = (self.closest_index - 360) / 180
-                command.linear.x = ((self.closest_index - 180) / 180) * 0.15
+                command.linear.x = ((self.closest_index - 180) / 180) * self.linear_vel
             elif self.closest_index >= 14 and self.closest_index < 180:
                 command.angular.z = self.closest_index / 180
-                command.linear.x = ((-self.closest_index + 179) / 180) * 0.15
+                command.linear.x = ((-self.closest_index + 179) / 180) * self.linear_vel
             command.angular.z *= 1.5
 
         return command
