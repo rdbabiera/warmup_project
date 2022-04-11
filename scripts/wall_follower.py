@@ -12,12 +12,13 @@ class WallFollower(object):
         self.sub_scan = rospy.Subscriber('/scan', LaserScan, self.process_scan)
         self.pub_move = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
-        #--- Static Variables
+        #--- State Variables
         self.closest_index = 0
         self.closest_range = 0
-        self.range_max = 3.5
+        
 
-        # Declared Values
+        # Static Values
+        self.range_max = 3.5
         self.safe_dist = 0.40
         self.buffer = 0.05
         self.linear_vel = 0.125
@@ -31,6 +32,7 @@ class WallFollower(object):
         increment = 2
 
         for i in range(0, 360):
+            # Get Average Range for each point
             curr_range = 0
             count = 0
             for j in range(-increment, increment+1):
@@ -45,24 +47,25 @@ class WallFollower(object):
                     closest_range = curr_range
                     closest_index = i
 
+        # Set States
         self.closest_index = closest_index
         self.closest_range = closest_range       
 
     def update_control(self):
         command = Twist()
+        command.linear.x = 0.125
         if self.closest_range > self.range_max:
-            command.linear.x = 0.125
             self.pub_move.publish(command)
             return
         angle = self.closest_index
         error = angle - 89
         
-        command.linear.x = 0.125
         # Case 1: Cruise Control
         if ((self.closest_range <= self.safe_dist - self.buffer) or \
             (self.closest_range >= self.safe_dist + self.buffer)) and \
             (abs(error) < 4) :
             command.angular.z = (self.closest_range - self.safe_dist) * 0.03
+        # Case 2: Turning
         else:
             command.angular.z = error * 0.03
         self.pub_move.publish(command)

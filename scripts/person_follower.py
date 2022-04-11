@@ -14,7 +14,7 @@ class PersonFollower(object):
 
         #--- Initialize State Variables, Saved Variables from Scanner
         self.closest_index = 0
-        self.closest_range = 0
+        self.closest_range = 4
         self.range_max = 3.5
 
         # Declared Values
@@ -28,8 +28,8 @@ class PersonFollower(object):
     def process_scan(self, data):
         ranges = data.ranges
 
-        closest_range = 4
         closest_index = 0
+        closest_range = 4
         for i, r in enumerate(ranges):
             if r < closest_range and r > 0:
                 closest_range = r
@@ -46,16 +46,16 @@ class PersonFollower(object):
 
         # Stopping Range
         if self.closest_range >= 0.025 and self.closest_range <= self.stop_distance:
-            if self.closest_index >= 180 and self.closest_index < 360:
+            if self.closest_index >= 180 and self.closest_index < 330:
                 command.angular.z = -0.785
-            elif self.closest_index >= 44 and self.closest_index < 180:
+            elif self.closest_index >= 29 and self.closest_index < 180:
                 command.angular.z = 0.785
         # Moving Range
         elif self.closest_range > self.stop_distance and self.closest_range < 4:
             command.linear.x = self.linear_vel
             # Handle View
             if self.closest_index >= 180 and self.closest_index < 345:
-                command.angular.z = -(self.closest_index - 180) / 180
+                command.angular.z = (self.closest_index - 360) / 180
             elif self.closest_index >= 14 and self.closest_index < 180:
                 command.angular.z = self.closest_index / 180
             command.angular.z *= 1.5
